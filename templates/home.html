@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Password Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            margin-bottom: 60px;
+        }
+        
+
+
+        @media (max-width: 768px) {
+            table {
+                font-size: 12px;
+            }
+
+            th,
+            td {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Password Manager</h1>
+
+    <!-- Password entry form -->
+    <form id="passwordForm">
+        <label for="appname">App Name:</label>
+        <input type="text" id="appname" name="appname" required><br>
+
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
+
+        <button type="submit">Save Password</button>
+    </form>
+
+    <!-- Search form -->
+    <form id="searchForm">
+        <label for="searchQuery">Search by App Name:</label>
+        <input type="text" id="searchQuery" name="searchQuery" required>
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Passwords display -->
+    <h2>Passwords</h2>
+    <table id="passwordTable">
+        <thead>
+            <tr>
+                <th>App Name</th>
+                <th>Username</th>
+                <th>Password</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Passwords will be dynamically added here -->
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Password Manager <br> &copy; Athuluri Akhil 2023. All rights reserved.
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        // Function to handle password form submission
+        $("#passwordForm").submit(function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get form values
+            var appname = $("#appname").val();
+            var username = $("#username").val();
+            var password = $("#password").val();
+
+            // Send data to the /passwords endpoint
+            $.ajax({
+                url: "/passwords",
+                type: "POST",
+                data: {
+                    appname: appname,
+                    username: username,
+                    password: password
+                },
+                success: function(response) {
+                    alert(response.message);
+                    // Clear form fields
+                    $("#appname").val("");
+                    $("#username").val("");
+                    $("#password").val("");
+                },
+                error: function(error) {
+                    alert("Error: " + error.responseJSON.error);
+                }
+            });
+        });
+
+        // Function to handle search form submission
+        $("#searchForm").submit(function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get search query
+            var searchQuery = $("#searchQuery").val();
+
+            // Send data to the /passwords/search endpoint
+            $.ajax({
+                url: "/passwords/search",
+                type: "GET",
+                data: {
+                    appname: searchQuery
+                },
+                success: function(response) {
+                    // Clear table rows except the table header
+                    $("#passwordTable tbody tr").remove();
+
+                    // Add new rows with password data
+                    response.forEach(function(password) {
+                        var newRow = "<tr><td>" + password.appname + "</td><td>" + password.username + "</td><td>" + password.password + "</td></tr>";
+                        $("#passwordTable tbody").append(newRow);
+                    });
+                },
+                error: function(error) {
+                    alert("Error: " + error.responseJSON.error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
